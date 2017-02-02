@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>My First Google Map</h1>
+
+<div id="googleMap" style="width:50%;height:400px;"></div>
+
+<script>
+var markerDynamic;
+var markPos;
+function myMap() {
+	//centro del mapa
+	var myCenter = new google.maps.LatLng(-33.06048903, -71.43007999);
+
+	//div de inicio del mapa
+	var mapCanvas = document.getElementById("googleMap");
+
+	//opciones de inicio del mapa
+	var mapOptions = {center: myCenter, zoom: 15};
+
+	//crear nuevo mapa
+	var map = new google.maps.Map(mapCanvas, mapOptions);
+
+	//creacion de un marcador 
+	var marker = new google.maps.Marker({position:myCenter});
+	marker.setMap(map);
+
+	var newMarker = new google.maps.LatLng(-34.16048903, -71.43007999);
+	markPos = newMarker;
+	var markerDynamic = new google.maps.Marker({position:newMarker});
+	markerDynamic.setMap(map);
+}
+</script>
+
+<!--<script src="https://maps.googleapis.com/maps/api/js?callback=myMap"></script>-->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyASKgHrvwa9b70e2BZiEpWe_FT8p9vtJzE&callback=myMap"></script>
+<script type="text/javascript">
+	markerDynamic.setPosition(-34.26048903, -71.43007999);
+	</script> 
+</body>
+</html>
