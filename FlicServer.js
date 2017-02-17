@@ -14,18 +14,21 @@ app.get('/', function(req, res){
 
 //eventos para la pagina web
 io.on('connection', function(socket){
-    console.log("connection");
-    io.emit("Bienvenido al servidor!");
+    console.log("connection");    
+    io.emit("welcome","Bienvenido al servidor!");
 
 
     socket.on('NewLatLong', function(latLong){
-        console.log("NewLatLong received: "+msg);
+        console.log("NewLatLong received: "+latLong);
         
         io.emit('NewLatLong', latLong);
     });
 
     socket.on('message',function(data){
         console.log("New message received: "+data);
+    });
+    socket.on('id',function(data){
+        console.log("New message from "+data);
     });
 });
 
