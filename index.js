@@ -17,6 +17,13 @@ app.get('/', function(request, response) {
   
 });
 
+
+app.get(/^(.+)$/, function(req, res){ 
+     console.log('static file request : ' + req.params);
+     res.sendFile( __dirname + req.params[0]); 
+ });
+
+
 //eventos para la pagina web
 io.on('connection', function(socket){
     console.log("connection");    
