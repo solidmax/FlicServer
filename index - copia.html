@@ -1,0 +1,87 @@
+
+<!doctype html>
+<html>
+<head>
+	<title>Flic Server Prototype</title>
+ 	
+	<script src="/socket.io/socket.io.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    
+
+	<script type="text/javascript">  
+		//inicializar socket io
+		var socket = io();  		
+	</script>  
+
+	<script>
+		//Map global para poder modificarlo fuera de su inicializacion
+		var map;
+		//markerDynamic global para poder modificarlo en base a eventos
+		var markerDynamic;
+		//inicializar google maps	
+		function myMap() {
+			//centro del mapa
+			var myCenter = new google.maps.LatLng(-33.06048903, -71.43007999);
+
+			//div de inicio del mapa
+			var mapCanvas = document.getElementById("googleMap");
+
+			//opciones de inicio del mapa
+			var mapOptions = {center: myCenter, zoom: 15};
+
+			//crear nuevo mapa
+			map = new google.maps.Map(mapCanvas, mapOptions);
+
+			//creacion de un marcador 
+		/*	var marker = new google.maps.Marker({position:myCenter});
+			marker.setMap(map);
+
+			var newMarker = new google.maps.LatLng(-34.16048903, -71.43007999);
+			markPos = newMarker;
+			*/
+			markerDynamic = new google.maps.Marker({position:myCenter});
+			markerDynamic.setMap(map);
+		}
+	</script>
+	
+</head>
+
+<body>
+	<p> Inicializar mapa </p>
+
+	<div id="googleMap" style="width:50%;height:400px;"></div>
+			
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyASKgHrvwa9b70e2BZiEpWe_FT8p9vtJzE&callback=myMap"></script>
+
+	</div>  
+
+	<div id="test">
+	    <p>Data received: </p>
+	</div>
+
+	<script>
+
+		function updateMarker(lat,long) {		  			    	
+	     	var LatLng = new google.maps.LatLng(lat, long);
+	    	markerDynamic.setPosition(LatLng);		  
+		}		
+
+		socket.on('connection',function(msg){
+			var div = document.getElementById( 'test' );
+			div.insertAdjacentHTML( 'beforeend', "<p> "+msg+"</p>" )
+		});
+
+		//Recibir datos de GPS desde el servidor
+		socket.on('NewLatLong', function(NewLatLong){			
+			//Mostrar datos brutos bajo el mapa
+			var div = document.getElementById( 'test' );
+			div.insertAdjacentHTML( 'beforeend', "<p> "+NewLatLong+"</p>" ); 
+
+			// serparar los datos  y enviarlos a  updateMarker para que se dibuje en el mapa	
+			var latLong = NewLatLong.split(" ");
+			//div.insertAdjacentHTML( 'beforeend', "<p> Lat: "+latLong[0]+" long: "+latLong[1]+"</p>" ); 
+			updateMarker(latLong[0],latLong[1]);
+		});
+		
+	</script>
+</body>
