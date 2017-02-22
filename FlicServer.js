@@ -1,11 +1,8 @@
 
-var app = require('express')();
+/*var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-/*
-var net = require('net');
-var sockets = [];
- */
+
 var port = process.env.PORT || 3000;
 
 app.get('/', function(req, res){
@@ -36,3 +33,24 @@ io.on('connection', function(socket){
 http.listen(port, function(){
     console.log("escuchando puerto %d",port);
 });
+*/
+var express = require('express');
+var app = express();
+
+app.set('port', (process.env.PORT || 5000));
+
+app.use(express.static(__dirname + '/public'));
+
+// views is directory for all template files
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
+
+app.get('/', function(request, response) {
+  response.render('pages/index');
+});
+
+app.listen(app.get('port'), function() {
+  console.log('Node app is running on port', app.get('port'));
+});
+
+
