@@ -5,9 +5,9 @@
   "engines": { 
 	"node": "5.10.x"
   },
-  "main": "index.js",
+  "main": "FlicServer.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node FlicServer.js"
   },
   "dependencies": {
     "express": "^4.10.2",
