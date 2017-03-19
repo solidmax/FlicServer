@@ -11,10 +11,13 @@
 
 	<script type="text/javascript">  
 		//inicializar socket io
-		var socket = io();  		
+		var socket = io();  	
+		var test = true;	
 	</script>  
 
-	<script>
+	<script>		
+
+		var user = {name: "", identificador: "", mapMarker: "", status: ""};
 		//Map global para poder modificarlo fuera de su inicializacion
 		var map;
 		//markerDynamic global para poder modificarlo en base a eventos
@@ -56,20 +59,101 @@
 
 	</div>  
 
+	<div id="dataTableDiv">
+		<table id="dataTable">
+			<tr>
+				<th>Dispositivo</th>
+				<th>Dueño</th>
+				<th>Flic ID</th>
+				<th>Posicion</th>
+				<th>Estado</th>
+			</tr>										
+			<tr>
+				<td id="button"><button onclick="setInterval(UpdateMapCenter, 3000,markerDynamic);">Ver Usuario</button></td>		
+				<td id="name">Maxi</td>
+				<td id="flicid">a1s2d3</td>
+				<td id="mapMarker"></td>
+				<td id="status"></td>
+			</tr>
+		</table>
+	</div>
+
 	<div id="test">
 	    <p>Data received: </p>
 	</div>
+
 
 	<script>
 
 		function updateMarker(lat,long) {		  			    	
 	     	var LatLng = new google.maps.LatLng(lat, long);
-	    	markerDynamic.setPosition(LatLng);		  
+	    	markerDynamic.setPosition(LatLng);	
+	    
 		}		
 
+		//console.log("antes de hello");
+		//muestra el marcador en el centro del mapa cada 3 segundos, esto en caso de que el marcador cambie de posicion
+
+		//setInterval(UpdateMapCenter, 3000);
+
+		function AddUser(){
+			user.name = "maxi";
+			user.ID = "1a2s3d";
+			user.mapMarker = "marker";
+			user.status = "on";
+		//	document.getElementById('name').innerHTML = user.name+" "+user.ID+" "+user.mapMarker+" "+user.status;
+			document.getElementById('status').innerHTML = "HOLAAAAAAAAAAAA";
+		}
+
+		function hola(){
+			console.log("hola funcion");
+		}
+
+
+		function AddUserInTable(name,flicid,mapMarker,status) {
+			//obtener tabla
+		    var table = document.getElementById("dataTable");
+		    //insertar al final de la tabla
+		    var row = table.insertRow(-1);
+
+		    //crear nuevas celdas 
+		    var buttonCell = row.insertCell(0);
+		    var nameCell = row.insertCell(1);
+		    var flicIdCell = row.insertCell(2);
+		    var mapMarkerCell = row.insertCell(3);
+		    var statusCell = row.insertCell(4);
+
+		    //identificar facilmente la celda con la mac del boton flic
+		    flicIdCell.id = flicid;
+
+		    //Crear boton de la 1ra celda
+		    var btn = document.createElement('BUTTON');
+			var buttonText = document.createTextNode("Ver Usuario"); 
+			btn.appendChild(buttonText);
+			btn.onclick = hola;
+			/*(function(){
+				console.log("holaa");
+			})*/
+
+		    //insertar datos en celdas
+		    buttonCell.appendChild(btn);
+
+		    nameCell.innerHTML = name;
+		    flicIdCell.innerHTML = flicid;
+		    mapMarkerCell.innerHTML = mapMarker;
+		    statusCell.innerHTML = status;
+		}
+
+
+		function UpdateMapCenter(currentMarker){
+			console.log("UpdateMapCenter");				
+			map.panTo(currentMarker.getPosition());
+		}
+
 		socket.on('connection',function(msg){
-			var div = document.getElementById( 'test' );
-			div.insertAdjacentHTML( 'beforeend', "<p> "+msg+"</p>" )
+		//	var div = document.getElementById( 'name' );
+		//	div.insertAdjacentHTML( 'beforeend', "<p> "+msg+"</p>" )
+			document.getElementById('name').innerHTML = msg+"";
 		});
 
 		//Recibir datos de GPS desde el servidor
@@ -82,7 +166,96 @@
 			var latLong = NewLatLong.split(" ");
 			//div.insertAdjacentHTML( 'beforeend', "<p> Lat: "+latLong[0]+" long: "+latLong[1]+"</p>" ); 
 			updateMarker(latLong[0],latLong[1]);
+
+			//escribir lat y long en la tabla
+		//	document.getElementById('status').innerHTML = latLong[0]+" "+latLong[1];
 		});
-		
+
+		//Recibir datos de GPS desde el servidor
+		socket.on('dataTest', function(clientData){			
+			//Mostrar datos brutos bajo el mapa
+			var div = document.getElementById( 'test' );
+			div.insertAdjacentHTML( 'beforeend', "<p> "+clientData+"</p>" ); 
+
+			// serparar los datos  y enviarlos a  updateMarker para que se dibuje en el mapa	
+			var userInfo = clientData.split(" ");			
+			//div.insertAdjacentHTML( 'beforeend', "<p> Lat: "+latLong[0]+" long: "+latLong[1]+"</p>" ); 
+			//0: user, 1: flicId, 2: lat, 3: long
+			updateMarker(userInfo[2],userInfo[3]);
+
+			//escribir datos de usuario en la tabla
+			document.getElementById('name').innerHTML = userInfo[0];
+			document.getElementById('flicid').innerHTML = userInfo[1];			
+			document.getElementById('mapMarker').innerHTML = userInfo[2] + " " +userInfo[3];
+
+			//revisar si el boton ya esta registrado en la tabla 
+			if(document.getElementById(userInfo[1])){
+				//Si ya esta registrado solo actualizar posicion
+			//	updateMarker(userInfo[2],userInfo[3]);
+			}
+			else{
+				//si no esta registrado se añade una nueva entrada en la tabla
+				AddUserInTable(userInfo[0],userInfo[1],userInfo[2]+" "+userInfo[3]);				
+			}
+		});
+ 			///////////////////////////////////////////////////////////////////////////////////////////////////
+ 			//CODIGO DE PRUEBA 		
 	</script>
+
+	<script type="text/javascript">
+		function modifica() {
+		  tab=document.getElementById('tabla');
+		  for (i=0; ele=tab.getElementsByTagName('input')[i]; i++) {
+		    if (ele.checked) edita(ele);
+		    ele.checked = false;
+		  }
+		}
+		function edita(obj) {
+		  padre = obj.parentNode.parentNode;
+		  celda = padre.getElementsByTagName('td');
+		  inicio = 2;//celda para comenzar
+		  fin = 6;//celda para terminar
+		  
+		  for(i=inicio;i<fin;i++){
+			  var celdaTmp = celda[i];
+			    
+			  txt = celdaTmp.innerHTML;
+			  celdaTmp.innerHTML = '';
+			  inp = celdaTmp.appendChild(document.createElement('input'));
+			  inp.value=txt;
+			  inp.onblur = function() { this.parentNode.innerHTML = this.value  }			    		     
+		  }
+		}
+
+		/*
+		var cat = {colour: "grey", name: "Spot", size: 46};
+		cat.size = 47;
+		show(cat.size);
+		delete cat.size;
+		show(cat.size);
+		show(cat);
+		*/
+	</script>
+ 
+ <table id="tabla">
+<tr>
+<td width="24"><input type="checkbox" /></td><td width="35">Pepe</td><td width="27">69</td>
+<td width="31">34</td>
+<td width="27">22</td>
+<td width="37">44</td>
+</tr>
+<tr>
+<td><input type="checkbox" /></td><td>Paco</td><td>172</td>
+<td>34r</td>
+<td>67</td>
+<td>22</td>
+</tr>
+<tr>
+<td><input type="checkbox" /></td><td>Tere</td><td>12</td>
+<td>88</td>
+<td>455</td>
+<td>678</td>
+</tr>
+</table>
+<input type="button" value="Modificar" onClick="modifica()" />
 </body>

@@ -3,7 +3,7 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
-app.set('port', (process.env.PORT || 5000));
+app.set('port', (process.env.PORT || 3000));
 
 app.use(express.static(__dirname + '/public'));
 
@@ -36,9 +36,16 @@ io.on('connection', function(socket){
         io.emit('NewLatLong', latLong);
     });
 
+    socket.on('dataTest', function(clientData){
+        console.log("dataTest received: "+clientData);
+        
+        io.emit('dataTest', clientData);
+    });
+
     socket.on('message',function(data){
         console.log("New message received: "+data);
     });
+
     socket.on('id',function(data){
         console.log("New message from "+data);
     });
