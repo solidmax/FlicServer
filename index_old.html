@@ -1,0 +1,363 @@
+
+<!doctype html>
+<html>
+<head>
+	<title>Flic Server Prototype</title>
+ 	<link rel="stylesheet" href="styles.css">
+
+	<script src="/socket.io/socket.io.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    
+
+	<script type="text/javascript">  
+		//inicializar socket io
+		var socket = io();  	
+		var test = true;	
+	
+		var StatusDiffMins = 0.25;
+		var mapCenterTimer;
+		//var newUser = {name: "", flicid: "", lat: "", long: "", mapMarker: "", status: ""};
+		//Estructura de usuario
+		var users = [{id: "", name: "", flicid: "", lat: "", long: "", mapMarker: "", status: "", lastUpdate: ""}];
+		//Variable global del mapa para poder modificarlo fuera de su inicializacion
+		var map;
+		//marcadores globales para poder modificarlos en base a eventos
+		var markerDynamic;
+		var markers = [];
+
+		// Setup the different icons and shadows
+		var iconURLPrefix = 'http://maps.google.com/mapfiles/ms/icons/';	    
+	    var icons = [
+	      iconURLPrefix + 'red-dot.png',
+	      iconURLPrefix + 'green-dot.png',
+	      iconURLPrefix + 'blue-dot.png',
+	      iconURLPrefix + 'orange-dot.png',
+	      iconURLPrefix + 'purple-dot.png',
+	      iconURLPrefix + 'pink-dot.png',      
+	      iconURLPrefix + 'yellow-dot.png'
+	    ]
+	    var iconsLength = icons.length;
+
+		//inicializar google maps	
+		function myMap() {
+			//centro del mapa
+			var myCenter = new google.maps.LatLng(-33.06048903, -71.43007999);
+
+			//div de inicio del mapa
+			var mapCanvas = document.getElementById("googleMap");
+
+			//opciones de inicio del mapa
+			var mapOptions = {center: myCenter, zoom: 15};
+
+			//crear nuevo mapa
+			map = new google.maps.Map(mapCanvas, mapOptions);
+
+			//creacion de un marcador por defecto
+			markerDynamic = new google.maps.Marker({position:myCenter, icon: icons[4]});
+			markerDynamic.setMap(map);
+			
+			//default marker
+			markers[0] = markerDynamic;
+		}
+	</script>
+	
+</head>
+
+<body>
+	<h1> Inicializar mapa test</h1>
+
+	<div id="googleMap" style="width:50%;height:400px;"></div>
+			
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyASKgHrvwa9b70e2BZiEpWe_FT8p9vtJzE&callback=myMap"></script>
+
+	</div>  
+
+	<div id="dataTableDiv">
+		<table id="dataTable">
+			<tr>
+				<th>Dispositivo</th>
+				<th>Dueño</th>
+				<th>Flic ID</th>
+				<th>Latitud</th>
+				<th>Longitud</th>
+				<th>Estado</th>
+			</tr>										
+			<tr>
+				<td id="button"><button onclick="UpdateMapCenter(markerDynamic);;">Ver Usuario</button></td>		
+				<td id="name">Maxi</td>
+				<td id="flicid">a1s2d3</td>
+				<td id="latitude"></td>
+				<td id="longitude"></td>
+				<td id="status"></td>
+			</tr>
+		</table>
+	</div>
+
+	<div id="test">
+	    <p>Data received: </p>
+	</div>
+
+
+	<script>
+
+		//actualiza la posicion del marcador del usuario indicado en el mapa
+		function UpdateMarker(id,lat,long) {		  					
+	     	var LatLng = new google.maps.LatLng(lat, long);
+	     	users[id].mapMarker.setPosition(LatLng);
+	     	users[id].lastUpdate = new Date();
+	    	//markerDynamic.setPosition(LatLng);		    
+		}		
+
+		//crea un nuevo marcador y lo posiciona en el mapa, además retorna el marcador creado
+		function CreateMarker(id,latitude,longitude){			
+			var newMarker = new google.maps.Marker({
+		        position: new google.maps.LatLng(latitude, longitude),
+		        map: map,
+		        icon: icons[id]
+		    });			
+			return newMarker;
+	    	//markerDynamic.setPosition(newMarker);	
+		}
+
+		//console.log("antes de hello");
+		//muestra el marcador en el centro del mapa cada 3 segundos, esto en caso de que el marcador cambie de posicion
+		//setInterval(UpdateMapCenter, 3000);
+
+		function TrackedUser(user){
+			currentUser.name = user.name;
+			currentUser.flicid = user.flicid;
+			//currentUser.lat
+			//currentUser.long 
+			currentUser.lat = user.lat;
+			currentUser.long = user.long;
+			currentUser.status = user.status;
+		//	document.getElementById('name').innerHTML = currentUser.name+" "+currentUser.ID+" "+currentUser.mapMarker+" "+currentUser.status;
+			document.getElementById('status').innerHTML = "HOLAAAAAAAAAAAA";
+		}
+
+		function CheckStatus(){
+			var currentTime = new Date();
+			//la cantidad de minutos asignada por el administrador
+			diffMins = 1000 * 60 * StatusDiffMins;
+			
+			//getTime entrega el tiempo en milisegundos desde 1970/01/01, 
+			//var timeDiff = currentTime.getTime() - givenTime.getTime();
+
+			//comparar cuanto tiempo lleva desactivado
+			if(users.length > 1){
+				for (i=1 ; i < users.length ; i++){
+
+					if( currentTime.getTime() - users[i].lastUpdate.getTime() > 3000 /*difmins*/ ){
+						console.log ("offline");
+						//cambiar stado a inactivo
+						users[i].status = "offline";
+						document.getElementById(users[i].flicid+'status').innerHTML = users[i].status;
+					}
+					else {
+						console.log("connected");
+						users[i].status = "connected";
+						document.getElementById(users[i].flicid+'status').innerHTML = users[i].status;						
+					}				
+				}
+			}
+		}
+
+		function AddUserInTable(newUser) {
+			//obtener tabla
+		    var table = document.getElementById("dataTable");
+		    //insertar al final de la tabla
+		    var row = table.insertRow(-1);
+
+		    //crear nuevas celdas 
+		    var buttonCell = row.insertCell(0);
+		    var nameCell = row.insertCell(1);
+		    var flicIdCell = row.insertCell(2);
+		    var latCell = row.insertCell(3);
+		    var longCell = row.insertCell(4);
+		    var statusCell = row.insertCell(5);
+
+		    //identificar facilmente la celda con la mac del boton flic
+		    nameCell.id = newUser.flicid+'name';
+		    flicIdCell.id = newUser.flicid+'id';
+		    latCell.id = newUser.flicid+'lat';
+		    longCell.id = newUser.flicid+'long';
+		    statusCell.id = newUser.flicid+'status';
+
+		    //Crear boton de la 1ra celda
+		    var btn = document.createElement('BUTTON');
+			var buttonText = document.createTextNode("Ver Usuario"); 
+			btn.appendChild(buttonText);			
+			btn.onclick = function(){
+				//console.log("nombre: "+name);
+				UpdateMapCenter(newUser.mapMarker);
+				//setInterval(UpdateMapCenter, 3000,newUser.mapMarker);
+				//TrackedUser(newUser.name,newUser.flicid,newUser.mapMarker,newUser.status)
+			};
+
+		    //insertar datos en celdas
+		    buttonCell.appendChild(btn);
+		    
+		    //mostrar en pagina
+		    nameCell.innerHTML = newUser.name;
+		    flicIdCell.innerHTML = newUser.flicid;
+		    latCell.innerHTML = newUser.lat;
+		    longCell.innerHTML = newUser.long;
+		    statusCell.innerHTML = newUser.status;
+		}
+
+		//El mapa se centra en el marcador entregado
+		function UpdateMapCenter(currentMarker){
+			//si ya se esta trackeando otro marcador, eliminar esa funcion
+			if(mapCenterTimer){
+				//console.log ("clear mapCenterTimer");
+				clearInterval(mapCenterTimer);
+			}
+
+			//crear un nuevo timer que siga al marcador seleccionado
+			mapCenterTimer = setInterval(function(){
+				//console.log("create mapcenter timer");
+				map.panTo(currentMarker.getPosition());				
+			}, 3000);			
+		}
+
+		socket.on('connection',function(msg){
+		//	var div = document.getElementById( 'name' );
+		//	div.insertAdjacentHTML( 'beforeend', "<p> "+msg+"</p>" )
+			document.getElementById('name').innerHTML = msg+"";
+		});
+
+		//Recibir datos de GPS desde el servidor
+		socket.on('NewLatLong', function(NewLatLong){			
+			//Mostrar datos brutos bajo el mapa
+			var div = document.getElementById( 'test' );
+			div.insertAdjacentHTML( 'beforeend', "<p> "+NewLatLong+"</p>" ); 
+
+			// serparar los datos  y enviarlos a  updateMarker para que se dibuje en el mapa	
+			var latLong = NewLatLong.split(" ");
+			//div.insertAdjacentHTML( 'beforeend', "<p> Lat: "+latLong[0]+" long: "+latLong[1]+"</p>" ); 
+			//UpdateMarker(latLong[0],latLong[1]);
+
+			//escribir lat y long en la tabla
+		//	document.getElementById('status').innerHTML = latLong[0]+" "+latLong[1];
+		});
+
+		//Recibir datos de GPS desde el servidor
+		socket.on('dataTest', function(clientRawData){			
+			//Mostrar datos brutos bajo el mapa
+			console.log("length"+ users.length);
+			var userData = {id: "", name: "", flicid: "", lat: "", long: "", mapMarker: "", status: "", lastUpdate: ""};
+			var div = document.getElementById( 'test' );
+			div.insertAdjacentHTML( 'beforeend', "<p> "+clientRawData+"</p>" ); 
+
+			// serparar los datos  y enviarlos a  updateMarker para que se dibuje en el mapa	
+			var userInfo = clientRawData.split(" ");			
+			//div.insertAdjacentHTML( 'beforeend', "<p> Lat: "+latLong[0]+" long: "+latLong[1]+"</p>" ); 
+			//0: user, 1: flicId, 2: lat, 3: long						
+			userData.name = userInfo[0];
+			userData.flicid = userInfo[1];
+			userData.lat = userInfo[2];
+			userData.long = userInfo[3];			
+			userData.status = "connected";
+			userData.lastUpdate = new Date();									
+
+			//revisar si el boton ya esta registrado en la tabla 
+			if(document.getElementById(userData.flicid+'id')){
+				//console.log("users length if "+users.length);
+				//Si ya esta registrado solo actualizar posicion				
+
+				//actualizar marcador cada vez que se mueva el usuario, se debe revisar a que usuario corresponden las coordenadas
+				for(id=0; id<= users.length; id++){
+					if(users[id].flicid == userData.flicid){	
+						//actualizar posicion en estructura global
+						users[id].lat = userData.lat;
+						users[id].long = userData.long;
+						UpdateMarker(id,users[id].lat,users[id].long);		
+						break;
+					}
+				}
+
+				//mostrar al usuario cambios de posicion actualizando datos en la tabla
+				document.getElementById(userData.flicid+'lat').innerHTML = userData.lat;
+				document.getElementById(userData.flicid+'long').innerHTML = userData.long;
+			//	document.getElementById(userData.flicid+'status').innerHTML = userData.status;
+			}
+			else{
+				//si no esta registrado se añade una nueva entrada en la tabla y se añade a la lista de usuarios				
+				userData.id = users.length;
+				//se crea un nuevo marcador en el mapa y se guarda en la info de usuario para poder modificarlo despues
+				userData.mapMarker = CreateMarker(userData.id,userData.lat,userData.long);
+				//console.log("users length else "+users.length);
+				//se añade el usuario al arreglo global				
+				users[users.length] = userData;				
+				AddUserInTable(userData);							
+			}
+			//cada usuario crea su propio timer para chequear si esta conectado o no 
+			UsersStatus[userData.id] = setTimeout(CheckStatus, 3000);
+			//limpiar variable
+			userData = null;
+		});
+
+		//chequear si los usuarios estan conectados o desconectados
+		var UsersStatus = setInterval (CheckStatus, 3000);
+ 			
+	</script>
+
+	<script type="text/javascript">
+		///////////////////////////////////////////////////////////////////////////////////////////////////
+ 			//CODIGO DE PRUEBA 		
+		function modifica() {
+		  tab=document.getElementById('tabla');
+		  for (i=0; ele=tab.getElementsByTagName('input')[i]; i++) {
+		    if (ele.checked) edita(ele);
+		    ele.checked = false;
+		  }
+		}
+		function edita(obj) {
+		  padre = obj.parentNode.parentNode;
+		  celda = padre.getElementsByTagName('td');
+		  inicio = 2;//celda para comenzar
+		  fin = 6;//celda para terminar
+		  
+		  for(i=inicio;i<fin;i++){
+			  var celdaTmp = celda[i];
+			    
+			  txt = celdaTmp.innerHTML;
+			  celdaTmp.innerHTML = '';
+			  inp = celdaTmp.appendChild(document.createElement('input'));
+			  inp.value=txt;
+			  inp.onblur = function() { this.parentNode.innerHTML = this.value  }			    		     
+		  }
+		}
+
+		/*
+		var cat = {colour: "grey", name: "Spot", size: 46};
+		cat.size = 47;
+		show(cat.size);
+		delete cat.size;
+		show(cat.size);
+		show(cat);
+		*/
+	</script>
+ 
+ <table id="tabla">
+<tr>
+<td width="24"><input type="checkbox" /></td><td width="35">Pepe</td><td width="27">69</td>
+<td width="31">34</td>
+<td width="27">22</td>
+<td width="37">44</td>
+</tr>
+<tr>
+<td><input type="checkbox" /></td><td>Paco</td><td>172</td>
+<td>34r</td>
+<td>67</td>
+<td>22</td>
+</tr>
+<tr>
+<td><input type="checkbox" /></td><td>Tere</td><td>12</td>
+<td>88</td>
+<td>455</td>
+<td>678</td>
+</tr>
+</table>
+<input type="button" value="Modificar" onClick="modifica()" />
+</body>
