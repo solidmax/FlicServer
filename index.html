@@ -695,7 +695,7 @@
             </div>
 
             <div id="dataTableDiv">
-                <table id="dataTable">
+                <table id="dataTable" class="table table-bordered table-striped cf">
                     <tr>
                         <th>Dispositivo</th>
                         <th>Dueño</th>
@@ -706,11 +706,11 @@
                     </tr>                                       
                     <tr>
                         <td id="button"><button onclick="UpdateMapCenter(markerDynamic);;">Ver Usuario</button></td>        
-                        <td id="name">Maxi</td>
+                        <td id="name">Default</td>
                         <td id="flicid">a1s2d3</td>
-                        <td id="latitude"></td>
-                        <td id="longitude"></td>
-                        <td id="status"></td>
+                        <td id="latitude">-33.06048903</td>
+                        <td id="longitude">-71.43007999</td>
+                        <td id="status"> </td>
                     </tr>
                 </table>
             </div>
@@ -1601,8 +1601,8 @@
             //Mostrar datos brutos bajo el mapa
             console.log("length"+ users.length);
             var userData = {id: "", name: "", flicid: "", lat: "", long: "", mapMarker: "", status: "", lastUpdate: ""};
-            var div = document.getElementById( 'test' );
-            div.insertAdjacentHTML( 'beforeend', "<p> "+clientRawData+"</p>" ); 
+           // var div = document.getElementById( 'test' );
+            //div.insertAdjacentHTML( 'beforeend', "<p> "+clientRawData+"</p>" ); 
 
             // serparar los datos  y enviarlos a  updateMarker para que se dibuje en el mapa    
             var userInfo = clientRawData.split(" ");            
