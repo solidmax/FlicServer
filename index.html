@@ -1648,13 +1648,13 @@
                 AddUserInTable(userData);                           
             }
             //cada usuario crea su propio timer para chequear si esta conectado o no 
-            UsersStatus[userData.id] = setTimeout(CheckStatus, 3000);
+            UsersStatus[userData.id] = setTimeout(CheckStatus, 15000);
             //limpiar variable
             userData = null;
         });
 
         //chequear si los usuarios estan conectados o desconectados
-        var UsersStatus = setInterval (CheckStatus, 3000);
+        var UsersStatus = setInterval (CheckStatus, 15000);
             
 
   //  });
