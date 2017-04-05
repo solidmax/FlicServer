@@ -704,14 +704,14 @@
                         <th>Longitud</th>
                         <th>Estado</th>
                     </tr>                                       
-                    <tr>
-                            <!--
+                    <tr style="display:none">
+                            
                         <td id="button"><button onclick="UpdateMapCenter(markerDynamic);;">Ver Usuario</button></td>
                         <td id="name">Default</td>
                         <td id="flicid">a1s2d3</td>
                         <td id="latitude">-33.06048903</td>
                         <td id="longitude">-71.43007999</td>
-                        <td id="status"> </td>-->
+                        <td id="status"> </td>
                     </tr>
                 </table>
             </div>
@@ -1493,8 +1493,8 @@
 
         function CheckStatus(){
             var currentTime = new Date();
-            //la cantidad de segundos asignada por el administrador
-            diffMins = 1000 * StatusDiffMins;
+            //la cantidad de minutos asignada por el administrador
+            diffMins = 1000 * 60 * StatusDiffMins;
             
             //getTime entrega el tiempo en milisegundos desde 1970/01/01, 
             //var timeDiff = currentTime.getTime() - givenTime.getTime();
@@ -1503,7 +1503,7 @@
             if(users.length > 1){
                 for (i=1 ; i < users.length ; i++){
 
-                    if( currentTime.getTime() - users[i].lastUpdate.getTime() > difmins ){
+                    if( currentTime.getTime() - users[i].lastUpdate.getTime() > 15000 /*difmins*/ ){
                         console.log ("offline");
                         //cambiar stado a inactivo
                         users[i].status = "offline";
