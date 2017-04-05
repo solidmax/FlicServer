@@ -1503,7 +1503,7 @@
             if(users.length > 1){
                 for (i=1 ; i < users.length ; i++){
 
-                    if( currentTime.getTime() - users[i].lastUpdate.getTime() > 3000 /*difmins*/ ){
+                    if( currentTime.getTime() - users[i].lastUpdate.getTime() > difmins ){
                         console.log ("offline");
                         //cambiar stado a inactivo
                         users[i].status = "offline";
