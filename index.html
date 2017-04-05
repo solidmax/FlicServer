@@ -42,7 +42,7 @@
         var socket = io();      
         var test = true;    
     
-        var StatusDiffMins = 0.25;
+        var StatusDiffMins = 15;
         var mapCenterTimer;
         //var newUser = {name: "", flicid: "", lat: "", long: "", mapMarker: "", status: ""};
         //Estructura de usuario
@@ -251,7 +251,7 @@
                 <ul style="margin-right:0;" class="nav navbar-nav navbar-right">
                     <li>
                         <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                            <img alt="" class="admin-pic img-circle" src="http://api.randomuser.me/portraits/thumb/men/10.jpg">Hola Maximiliano <b class="caret"></b>
+                            <img alt="" class="admin-pic img-circle" src="http://api.randomuser.me/portraits/thumb/men/10.jpg">Hi Eduardo <b class="caret"></b>
                         </a>
                         <ul style="margin-top:14px;" role="menu" class="dropdown-setting dropdown-menu">
                             <li>
@@ -620,7 +620,7 @@
                                 <button type="button" class="close" data-dismiss="alert">×</button>
                                 <span class="tittle-alert entypo-info-circled"></span>
                                 Welcome back,&nbsp;
-                                <strong>Maximiliano!</strong>&nbsp;&nbsp;Your last sig in at Yesterday, 16:54 PM
+                                <strong>Eduardo!</strong>&nbsp;&nbsp;Your last sig in at Yesterday, 16:54 PM
                             </div>
 
 
@@ -705,18 +705,19 @@
                         <th>Estado</th>
                     </tr>                                       
                     <tr>
-                        <td id="button"><button onclick="UpdateMapCenter(markerDynamic);;">Ver Usuario</button></td>        
+                            <!--
+                        <td id="button"><button onclick="UpdateMapCenter(markerDynamic);;">Ver Usuario</button></td>
                         <td id="name">Default</td>
                         <td id="flicid">a1s2d3</td>
                         <td id="latitude">-33.06048903</td>
                         <td id="longitude">-71.43007999</td>
-                        <td id="status"> </td>
+                        <td id="status"> </td>-->
                     </tr>
                 </table>
             </div>
 
             <!--  DEVICE MANAGER -->
-            <div class="content-wrap">
+<!--            <div class="content-wrap">
                 <div class="row">
                     <div class="col-sm-3">
                         <div class="profit" id="profitClose">
@@ -843,17 +844,10 @@
                     </div>
                 </div>
             </div>
+
+            -->
             <!--  / DEVICE MANAGER -->
-
-
-
-
-
-
-
-
-
-
+<!--
             <div class="content-wrap">
                 <div class="row">
                     <div class="col-sm-8">
@@ -1041,20 +1035,24 @@
                     </div>
                 </div>
             </div>
+-->
 
 
 
 
-
-            <div class="content-wrap">
+            <div class="content-wrap" style="display:none">
                 <div class="row">
                     <div class="col-sm-6">
                         <div class="chart-wrap">
-                            <div class="chart-dash">
-                                <!-- <div id="sparkline"></div> -->
-                                <div id="placeholder" style="width:100%;height:200px;"></div>
+                            <div class="chart-dash">    
+
+                                <div id="placeholder" style="width:100%;height:1px;">
+                                	
+                                </div>
+
                             </div>
-                            <div class="row">
+                            
+                            <div class="row">                             
                                 <div class="col-sm-8">
                                     <div class="speed">
                                         <h2>Speed Avarage</h2>
@@ -1068,37 +1066,39 @@
                                         <h2>Traffic per day</h2>
                                         <h1>2.5874</h1>
                                     </div>
+                                </div>                             
+                            </div>
+                            <div class="row">                                
+                                <div class="col-sm-4">
+                                    <div class="traffic-rates">
+                                        <h4>Traffic Rates</h4>
+                                        <h1>30 %
+                                            <span>-1,3 %</span>
+                                        </h1>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">                                   
+                                    <div class="traffic-rates">
+                                        <h4>Traffic Rates</h4>
+                                        <h1>30 %
+                                            <span>-1,3 %</span>
+                                        </h1>
+                                    </div>                                    
+                                </div>
+                                <div class="col-sm-4">                                    
+                                    <div class="traffic-rates">
+                                        <h4>Traffic Rates</h4>
+                                        <h1>30 %
+                                            <span>-1,3 %</span>
+                                        </h1>
+                                    </div>                                    
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-sm-4">
-                                    <div class="traffic-rates">
-                                        <h4>Traffic Rates</h4>
-                                        <h1>30 %
-                                            <span>-1,3 %</span>
-                                        </h1>
-                                    </div>
-                                </div>
-                                <div class="col-sm-4">
-                                    <div class="traffic-rates">
-                                        <h4>Traffic Rates</h4>
-                                        <h1>30 %
-                                            <span>-1,3 %</span>
-                                        </h1>
-                                    </div>
-                                </div>
-                                <div class="col-sm-4">
-                                    <div class="traffic-rates">
-                                        <h4>Traffic Rates</h4>
-                                        <h1>30 %
-                                            <span>-1,3 %</span>
-                                        </h1>
-                                    </div>
-                                </div>
-                            </div>
+                            
                         </div>
                     </div>
                     <div class="col-sm-6">
+                        
                         <div class="weather-wrap">
                             <div class="row">
                                 <div class="col-sm-12">
@@ -1221,9 +1221,10 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div>                       
                     </div>
-                </div>
+           		</div>
+
                 <!-- /END OF CONTENT -->
 
 
@@ -1244,8 +1245,8 @@
                 </div>
                 <!-- / END OF FOOTER -->
 
-
             </div>
+
         </div>
     </div>
     <!--  END OF PAPER WRAP -->
