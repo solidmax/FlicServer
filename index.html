@@ -42,11 +42,11 @@
         var socket = io();      
         var test = true;    
     
-        var StatusDiffMins = 15;
+        var StatusDiffMins = 1000 * 60 * 0.5; //milisegunds, segundos, minutos
         var mapCenterTimer;
         //var newUser = {name: "", flicid: "", lat: "", long: "", mapMarker: "", status: ""};
         //Estructura de usuario
-        var users = [{id: "", name: "", flicid: "", lat: "", long: "", mapMarker: "", status: "", lastUpdate: ""}];
+        var users = [{id: "", name: "", flicid: "", lat: "", long: "", status: "", mapMarker: "", lastUpdate: ""}];
         //Variable global del mapa para poder modificarlo fuera de su inicializacion
         var map;
         //marcadores globales para poder modificarlos en base a eventos
@@ -1494,7 +1494,7 @@
         function CheckStatus(){
             var currentTime = new Date();
             //la cantidad de minutos asignada por el administrador
-            diffMins = 1000 * 60 * StatusDiffMins;
+            diffMins = StatusDiffMins;
             
             //getTime entrega el tiempo en milisegundos desde 1970/01/01, 
             //var timeDiff = currentTime.getTime() - givenTime.getTime();
@@ -1503,15 +1503,15 @@
             if(users.length > 1){
                 for (i=1 ; i < users.length ; i++){
 
-                    if( currentTime.getTime() - users[i].lastUpdate.getTime() > 15000 /*difmins*/ ){
+                    if( currentTime.getTime() - users[i].lastUpdate.getTime() > diffMins /*difmins*/ ){
                         console.log ("offline");
                         //cambiar stado a inactivo
                         users[i].status = "offline";
                         document.getElementById(users[i].flicid+'status').innerHTML = users[i].status;
                     }
                     else {
-                        console.log("connected");
-                        users[i].status = "connected";
+                        console.log("user status:"+users[i].status);
+                        //users[i].status = "connected";
                         document.getElementById(users[i].flicid+'status').innerHTML = users[i].status;                      
                     }               
                 }
@@ -1601,7 +1601,7 @@
         socket.on('dataTest', function(clientRawData){          
             //Mostrar datos brutos bajo el mapa
             console.log("length"+ users.length);
-            var userData = {id: "", name: "", flicid: "", lat: "", long: "", mapMarker: "", status: "", lastUpdate: ""};
+            var userData = {id: "", name: "", flicid: "", lat: "", long: "", status: "" ,mapMarker: "", lastUpdate: ""};
            // var div = document.getElementById( 'test' );
             //div.insertAdjacentHTML( 'beforeend', "<p> "+clientRawData+"</p>" ); 
 
@@ -1611,9 +1611,12 @@
             //0: user, 1: flicId, 2: lat, 3: long                       
             userData.name = userInfo[0];
             userData.flicid = userInfo[1];
-            userData.lat = userInfo[2];
-            userData.long = userInfo[3];            
-            userData.status = "connected";
+            userData.status = userInfo[4];
+            if(userData.status == "alarma"){
+	            userData.lat = userInfo[2];
+	            userData.long = userInfo[3];            
+	        }
+            
             userData.lastUpdate = new Date();                                   
 
             //revisar si el boton ya esta registrado en la tabla 
@@ -1624,9 +1627,10 @@
                 //actualizar marcador cada vez que se mueva el usuario, se debe revisar a que usuario corresponden las coordenadas
                 for(id=0; id<= users.length; id++){
                     if(users[id].flicid == userData.flicid){    
-                        //actualizar posicion en estructura global
+                        //actualizar posicion en estructura global y estado
                         users[id].lat = userData.lat;
                         users[id].long = userData.long;
+                        users[id].status = userData.status;
                         UpdateMarker(id,users[id].lat,users[id].long);      
                         break;
                     }
@@ -1635,7 +1639,7 @@
                 //mostrar al usuario cambios de posicion actualizando datos en la tabla
                 document.getElementById(userData.flicid+'lat').innerHTML = userData.lat;
                 document.getElementById(userData.flicid+'long').innerHTML = userData.long;
-            //  document.getElementById(userData.flicid+'status').innerHTML = userData.status;
+                document.getElementById(userData.flicid+'status').innerHTML = userData.status;
             }
             else{
                 //si no esta registrado se añade una nueva entrada en la tabla y se añade a la lista de usuarios                
