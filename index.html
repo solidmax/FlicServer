@@ -1459,7 +1459,8 @@
         //actualiza la posicion del marcador del usuario indicado en el mapa
         function UpdateMarker(id,lat,long) {                       
             var LatLng = new google.maps.LatLng(lat, long);
-            users[id].mapMarker.setPosition(LatLng);        
+            users[id].mapMarker.setPosition(LatLng);   
+            console.log("last update updated");
             users[id].lastUpdate = new Date();
             //markerDynamic.setPosition(LatLng);            
         }       
@@ -1505,16 +1506,22 @@
 
                     if( currentTime.getTime() - users[i].lastUpdate.getTime() > diffMins /*difmins*/ ){
                         console.log ("offline");                        
-                        //cambiar estado a inactivo
-                        if(users[i].cellStatus == "alarma"){                        
-                        	users[i].cellStatus = "Celular desconectado durante alarma";                        
-                        }
+                        //cambiar estado a inactivo                        
                         if(users[i].cellStatus == "normal"){                        
                         	users[i].cellStatus = "Celular desconectado";                        
                         }
                         document.getElementById(users[i].flicid+'status').innerHTML = users[i].cellStatus;
                     }
-                    else {
+                    //si pasan mas de 30 segundos durante alarma 
+                    else if(currentTime.getTime() - users[i].lastUpdate.getTime() > 30000)
+	                {
+	                	if(users[i].cellStatus == "alarma"){                        
+                        	users[i].cellStatus = "Celular desconectado durante alarma";                        
+                        }
+                        document.getElementById(users[i].flicid+'status').innerHTML = users[i].cellStatus;
+	                }
+	                else
+                    {
                         console.log("user status:"+users[i].cellStatus+ " "+users[i].flicStatus);
                         //users[i].status = "connected";
                         document.getElementById(users[i].flicid+'status').innerHTML = users[i].cellStatus + " " + users[i].flicStatus;                      
