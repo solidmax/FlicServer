@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var pg = require('pg');
 
 app.set('port', (process.env.PORT || 3000));
 
@@ -24,11 +25,38 @@ app.get(/^(.+)$/, function(req, res){
  });
 
 
+// Conexion de base de datos
+var connectionString = "postgres://ipnsmckxjgifwn:9a7557cc5cd0f8236fdbfc468b53329c82112bdef6d0a7f08d31cd945dc3d74f@ec2-184-73-199-72.compute-1.amazonaws.com:5432/d5ahj64sjdu31q?ssl=true"
+
+var client = new pg.Client(connectionString);
+client.connect();
+
+
+
+
+
 //eventos para la pagina web
 io.on('connection', function(socket){
     console.log("connection");    
     io.emit("welcome","Bienvenido al servidor!");
 
+    socket.on('dbQuery', function(msg){
+        var query = client.query('SELECT * FROM users', function(err, result) {
+            //  done();
+            if(err) return console.error(err);
+            console.log(result.rows);
+            io.emit('dbQuery',result.rows);
+        });    
+    });
+
+    socket.on('test',function(query){
+        console.log("query test: "+query);
+        client.query(query, function(err, result) {            
+            if(err) return console.error(err);
+            console.log(result.rows);
+            //io.emit('dbQuery',result.rows);
+        });    
+    });
 
     socket.on('NewLatLong', function(latLong){
         console.log("NewLatLong received: "+latLong);

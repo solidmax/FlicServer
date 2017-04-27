@@ -7,7 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="/socket.io/socket.io.js"></script>    
+    
     <!-- Le styles -->
 
 
@@ -52,7 +53,7 @@
         //marcadores globales para poder modificarlos en base a eventos
         var markerDynamic;
         var markers = [];
-
+        
         // Setup the different icons and shadows
         var iconURLPrefix = 'http://maps.google.com/mapfiles/ms/icons/';        
         var icons = [
@@ -65,7 +66,7 @@
           iconURLPrefix + 'yellow-dot.png'
         ]
         var iconsLength = icons.length;
-
+        socket.emit('dbQuery',"");
         //inicializar google maps   
         function myMap() {
             //centro del mapa
@@ -87,6 +88,14 @@
             //default marker
             markers[0] = markerDynamic;
         }
+
+        socket.on('dbQuery',function(rows){
+        	 for (var i=0; i<rows.length; i++) {
+          		//html += rows[i].firstname + ' ' + rows[i].lastname + '<br>';
+          		console.log("query: "+rows[i].name + " "+ rows[i].flicid);            
+        	}  
+        	 socket.emit('test','SELECT * FROM users');     	       
+        });
 
     </script>
 </head>
