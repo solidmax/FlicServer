@@ -67,6 +67,7 @@
         ]
         var iconsLength = icons.length;
         socket.emit('dbQuery',"");
+        
         //inicializar google maps   
         function myMap() {
             //centro del mapa
@@ -90,12 +91,14 @@
         }
 
         socket.on('dbQuery',function(rows){
-        	 for (var i=0; i<rows.length; i++) {
+        	for (var i=0; i<rows.length; i++) {
           		//html += rows[i].firstname + ' ' + rows[i].lastname + '<br>';
           		console.log("query: "+rows[i].name + " "+ rows[i].flicid);            
         	}  
         	 socket.emit('test','SELECT * FROM users');     	       
         });
+
+       
 
     </script>
 </head>
@@ -1498,7 +1501,7 @@
             currentUser.long = user.long;
             currentUser.status = user.status;
         //  document.getElementById('name').innerHTML = currentUser.name+" "+currentUser.ID+" "+currentUser.mapMarker+" "+currentUser.status;
-            document.getElementById('status').innerHTML = "HOLAAAAAAAAAAAA";
+            document.getElementById('status').innerHTML = "trackedUser()";
         }
 
         function CheckStatus(){
@@ -1537,6 +1540,22 @@
                     }               
                 }
             }
+        }
+
+        //se crea y envia una variable que tiene la estructura de la tabla en la base de datos
+        function AddUserToDB(user)
+        {            
+            var userDB = { name: "", flicid: "", lat: "", long: "", flicstatus: "", cellstatus: ""};
+
+            userDB.name = user.name;
+            userDB.flicid = user.flicid;
+            userDB.lat = user.lat;
+            userDB.long = user.long;
+            userDB.flicstatus = user.flicStatus;
+            userDB.cellstatus = user.cellStatus;
+
+            console.log("new user to db: "+userDB);
+            socket.emit('dbInsert',userDB);
         }
 
         function AddUserInTable(newUser) {
@@ -1580,6 +1599,8 @@
             latCell.innerHTML = newUser.lat;
             longCell.innerHTML = newUser.long;
             statusCell.innerHTML = newUser.cellStatus + " " + newUser.flicStatus;
+
+
         }
 
         //El mapa se centra en el marcador entregado
@@ -1618,6 +1639,25 @@
 
             //escribir lat y long en la tabla
         //  document.getElementById('status').innerHTML = latLong[0]+" "+latLong[1];
+        });
+
+ 		
+ 		//Testing para obtener usuarios desde la base de datos
+ 		socket.on('GetAllUsers',function(rows){
+
+ 			//var userData = {id: "", name: "", flicid: "", lat: "", long: "", flicStatus: "" , cellStatus: "", mapMarker: "", lastUpdate: ""};
+
+        	for (var i=0; i<rows.length; i++) {
+          		//html += rows[i].firstname + ' ' + rows[i].lastname + '<br>';
+          		users[i].id = rows.id;
+          		users[i].name = rows.name;
+          		users[i].flicid = rows.flicid;
+          		users[i].lat = rows.lat;
+          		users[i].flicStatus = rows.flicStatus;
+          		users[i].cellStatus = rows.cellStatus;
+
+          		console.log("query: "+rows[i].name + " "+ rows[i].flicid);            
+        	}
         });
 
         //Recibir datos de GPS desde el servidor
@@ -1684,7 +1724,8 @@
                 //console.log("users length else "+users.length);
                 //se añade el usuario al arreglo global             
                 users[users.length] = userData;             
-                AddUserInTable(userData);                           
+                AddUserInTable(userData);    
+                AddUserToDB(userData);                       
             }
             //cada usuario crea su propio timer para chequear si esta conectado o no 
             UsersStatus[userData.id] = setTimeout(CheckStatus, 15000);

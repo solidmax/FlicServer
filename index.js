@@ -40,13 +40,46 @@ io.on('connection', function(socket){
     console.log("connection");    
     io.emit("welcome","Bienvenido al servidor!");
 
-    socket.on('dbQuery', function(msg){
+    socket.on('dbQuery', function(msg){        
         var query = client.query('SELECT * FROM users', function(err, result) {
             //  done();
             if(err) return console.error(err);
-            console.log(result.rows);
+            console.log("dbQuery server: "+result.rows);
             io.emit('dbQuery',result.rows);
         });    
+
+        console.log("var query: "+query);
+    });
+
+    socket.on('dbInsert', function(newUser){
+        console.log("-------------- dbInsert -------------");
+        //tabla usuario: name, flicid, lat, long, flicstatus, cellstatus
+        console.log("dbInsert");
+        console.log("name: "+newUser.name); 
+        console.log("flicid: "+newUser.flicid); 
+        console.log("lat: "+newUser.lat); 
+        console.log("long: "+newUser.long); 
+        console.log("flicstatus: "+newUser.flicstatus); 
+        console.log("cellstatus: "+newUser.cellstatus); 
+
+        
+        newUser.lat = 1.11;
+        newUser.long = 2.22;
+        console.log("newlat: "+newUser.lat); 
+        console.log("newlong: "+newUser.long); 
+
+        var queryString = 'INSERT INTO users (name, flicid, lat, long, flicstatus, cellstatus) VALUES (\''+newUser.name+'\',\''+newUser.flicid+'\',\''+newUser.lat+'\',\''+newUser.long+'\',\''+newUser.flicstatus+'\',\''+newUser.cellstatus+'\')';
+        console.log("queryString: "+queryString);
+      //var query = client.query('INSERT INTO users SET ?', newUser, function(err, result) {
+      var query = client.query(queryString, function(err, result) {
+//        var query = client.query('INSERT INTO users VALUES ('+newUser.name+',\"'+newUser.flicid+'\",'+newUser.lat+','+newUser.long+','+newUser.flicstatus+','+newUser.cellstatus+')', function(err, result) {            
+        //var query = client.query('INSERT INTO users (name, flicid, lat, long, flicstatus, cellstatus) VALUES (${name},${flicid},${lat},${long},${flicstatus},${cellstatus})',newUser, function(err, result) {            
+            if(err) return console.error(err);
+            else
+                console.log("------ >>>>>>>>>>> insertado: "+ result.rows);
+         //   io.emit('dbQuery',result.rows);
+        });    
+        
     });
 
     socket.on('test',function(query){
