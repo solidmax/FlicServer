@@ -66,8 +66,7 @@
           iconURLPrefix + 'yellow-dot.png'
         ]
         var iconsLength = icons.length;
-        socket.emit('dbQuery',"");
-        
+            
         //inicializar google maps   
         function myMap() {
             //centro del mapa
@@ -90,15 +89,13 @@
             markers[0] = markerDynamic;
         }
 
-        socket.on('dbQuery',function(rows){
-        	for (var i=0; i<rows.length; i++) {
-          		//html += rows[i].firstname + ' ' + rows[i].lastname + '<br>';
-          		console.log("query: "+rows[i].name + " "+ rows[i].flicid);            
-        	}  
-        	 socket.emit('test','SELECT * FROM users');     	       
-        });
+          //DB query variables
+        //var dbUsers = [{id: "", name: "", flicid: "", lat: "", long: "", flicStatus: "", cellStatus: ""}];
+        var canReadNewUsers = false;
 
-       
+        //Obetener todos los usuarios en la BD
+        socket.emit('dbQuery','SELECT * FROM users');
+                
 
     </script>
 </head>
@@ -1469,7 +1466,11 @@
             });*/
         
         //actualiza la posicion del marcador del usuario indicado en el mapa
-        function UpdateMarker(id,lat,long) {                       
+        function UpdateMarker(id,lat,long) {            
+            console.log("update marker !!!!!!!!!!!!!!!!!1");
+            console.log("id: "+id);
+            console.log("id: "+lat);
+            console.log("id: "+long);
             var LatLng = new google.maps.LatLng(lat, long);
             users[id].mapMarker.setPosition(LatLng);   
             console.log("last update updated");
@@ -1513,7 +1514,7 @@
             //var timeDiff = currentTime.getTime() - givenTime.getTime();
 
             //comparar cuanto tiempo lleva desactivado
-            if(users.length > 1){
+            if(users.length >= 1){
                 for (i=1 ; i < users.length ; i++){
 
                     if( currentTime.getTime() - users[i].lastUpdate.getTime() > diffMins /*difmins*/ ){
@@ -1593,6 +1594,14 @@
             //insertar datos en celdas
             buttonCell.appendChild(btn);
             
+            console.log("------------- add in table ------------------");
+            console.log("nombre: " +newUser.name);
+            console.log("flicid: " +newUser.flicid);
+            console.log("lat: " +newUser.lat);
+            console.log("long: " +newUser.long);
+            console.log("cellStatus: " +newUser.cellStatus);
+            console.log("flicStatus: " +newUser.flicStatus);
+            console.log("-------------------------------------------");
             //mostrar en pagina
             nameCell.innerHTML = newUser.name;
             flicIdCell.innerHTML = newUser.flicid;
@@ -1642,95 +1651,123 @@
         });
 
  		
- 		//Testing para obtener usuarios desde la base de datos
- 		socket.on('GetAllUsers',function(rows){
-
- 			//var userData = {id: "", name: "", flicid: "", lat: "", long: "", flicStatus: "" , cellStatus: "", mapMarker: "", lastUpdate: ""};
-
-        	for (var i=0; i<rows.length; i++) {
+ 		//al recibir la respuesta del servidor almacenar los usuarios en una variable local
+ 		socket.on('dbQuery',function(dbUsers){
+       //     console.log("----------------- DB QUERY ----------------------");
+ 			var userData = {id: "", name: "", flicid: "", lat: "", long: "", flicStatus: "" , cellStatus: "", mapMarker: "", lastUpdate: ""};
+            var rawData = "";
+        	for (var i=0; i<dbUsers.length; i++) {
+                //iniciar variable
+               
+                console.log("dbuser:")                
+                console.log("nombre: "+ dbUsers[i].name);
+                console.log("flicid: "+ dbUsers[i].flicid);
+                console.log("lat: "+ dbUsers[i].lat);
+                console.log("long: "+ dbUsers[i].long);
+                console.log("flicstatus: "+ dbUsers[i].flicstatus);
+                console.log("flicId: "+ dbUsers[i].cellstatus);
           		//html += rows[i].firstname + ' ' + rows[i].lastname + '<br>';
-          		users[i].id = rows.id;
-          		users[i].name = rows.name;
-          		users[i].flicid = rows.flicid;
-          		users[i].lat = rows.lat;
-          		users[i].flicStatus = rows.flicStatus;
-          		users[i].cellStatus = rows.cellStatus;
-
-          		console.log("query: "+rows[i].name + " "+ rows[i].flicid);            
+               
+                rawData = dbUsers[i].name + " " + dbUsers[i].flicid + " " + dbUsers[i].lat + " " + dbUsers[i].long + " " + dbUsers[i].flicstatus + " " + dbUsers[i].cellstatus;                             
+                console.log("new user dbquery: "+i);
+                AddNewUser(rawData);
+                /*
+                //inicializa la variable
+                users[i] = userData;
+                //llenar con datos obtenidos desde la bd
+                users[i].id = i;
+          		users[i].name = dbUsers[i].name+"";
+          		users[i].flicid = dbUsers[i].flicid+"";
+          		users[i].lat = dbUsers[i].lat;
+                users[i].long = dbUsers[i].long;
+          		users[i].flicStatus = dbUsers[i].flicstatus+"";
+          		users[i].cellStatus = dbUsers[i].cellstatus+"";
+                users[i].mapMarker = CreateMarker(users[i].id, users[i].lat, users[i].long);
+                users[i].lastUpdate = new Date();
+                AddUserInTable(users[i]);          
+                */
+         //       console.log ("--------------------------------");
         	}
+
+            //canReadNewUsers = true;
         });
 
         //Recibir datos de GPS desde el servidor
-        socket.on('dataTest', function(clientRawData){          
-            //Mostrar datos brutos bajo el mapa
-            console.log("length"+ users.length);
-            var userData = {id: "", name: "", flicid: "", lat: "", long: "", flicStatus: "" , cellStatus: "", mapMarker: "", lastUpdate: ""};
-           // var div = document.getElementById( 'test' );
-            //div.insertAdjacentHTML( 'beforeend', "<p> "+clientRawData+"</p>" ); 
+        socket.on('dataTest', function(clientRawData){    
 
-            // serparar los datos  y enviarlos a  updateMarker para que se dibuje en el mapa    
-            var userInfo = clientRawData.split(" ");            
-            //div.insertAdjacentHTML( 'beforeend', "<p> Lat: "+latLong[0]+" long: "+latLong[1]+"</p>" ); 
-            //0: user, 1: flicId, 2: lat, 3: long                       
-            userData.name = userInfo[0];
-            userData.flicid = userInfo[1];
-            userData.flicStatus = userInfo[4];
-            userData.cellStatus = userInfo[5];
-            if(userData.cellStatus == "alarma"){
-	            userData.lat = userInfo[2];
-	            userData.long = userInfo[3];            
-	        }                        
+           if(canReadNewUsers){
+                //Mostrar datos brutos bajo el mapa
+                console.log("length"+ users.length);
+                var userData = {id: "", name: "", flicid: "", lat: "", long: "", flicStatus: "" , cellStatus: "", mapMarker: "", lastUpdate: ""};
+               // var div = document.getElementById( 'test' );
+                //div.insertAdjacentHTML( 'beforeend', "<p> "+clientRawData+"</p>" ); 
 
-            userData.lastUpdate = new Date();                                   
+                // serparar los datos  y enviarlos a  updateMarker para que se dibuje en el mapa    
+                var userInfo = clientRawData.split(" ");            
+                //div.insertAdjacentHTML( 'beforeend', "<p> Lat: "+latLong[0]+" long: "+latLong[1]+"</p>" ); 
+                //0: user, 1: flicId, 2: lat, 3: long                       
+                userData.name = userInfo[0];
+                userData.flicid = userInfo[1];
+                userData.flicStatus = userInfo[4];
+                userData.cellStatus = userInfo[5];
+                if(userData.cellStatus == "alarma"){
+    	            userData.lat = userInfo[2];
+    	            userData.long = userInfo[3];            
+    	        }                        
 
-            //revisar si el boton ya esta registrado en la tabla 
-            if(document.getElementById(userData.flicid+'id')){
-                //console.log("users length if "+users.length);
-                //Si ya esta registrado solo actualizar posicion                
+                userData.lastUpdate = new Date();                                   
 
-                //actualizar marcador cada vez que se mueva el usuario, se debe revisar a que usuario corresponden las coordenadas
-                for(id=0; id<= users.length; id++){
-                    if(users[id].flicid == userData.flicid){    
+                //revisar si el boton ya esta registrado en la tabla 
+                if(document.getElementById(userData.flicid+'id')){
+                    //console.log("users length if "+users.length);
+                    //Si ya esta registrado solo actualizar posicion                
 
-                        //actualizar posicion en estructura global y estado                        
-                        if(userData.lat != ""){                        	
-		                    users[id].lat = userData.lat;	                    
-		                    users[id].long = userData.long;
-		                }
-		                else{
-		                	//usar los ultimos datos conocidos si no se recibieron nuevas posiciones
-							userData.lat = users[id].lat;	                    
-		                    userData.long = users[id].long;
-		                }
-                        users[id].flicStatus = userData.flicStatus;
-                        users[id].cellStatus = userData.cellStatus;
+                    //actualizar marcador cada vez que se mueva el usuario, se debe revisar a que usuario corresponden las coordenadas
+                    for(id=0; id<= users.length; id++){
+                        if(users[id].flicid == userData.flicid){    
 
-                        UpdateMarker(id,users[id].lat,users[id].long);      
-                        break;
+                            //actualizar posicion en estructura global y estado                        
+                            if(userData.lat != ""){                        	
+    		                    users[id].lat = userData.lat;	                    
+    		                    users[id].long = userData.long;
+    		                }
+    		                else{
+    		                	//usar los ultimos datos conocidos si no se recibieron nuevas posiciones
+    							userData.lat = users[id].lat;	                    
+    		                    userData.long = users[id].long;
+    		                }
+                            users[id].flicStatus = userData.flicStatus;
+                            users[id].cellStatus = userData.cellStatus;
+
+                            UpdateMarker(id,users[id].lat,users[id].long);      
+                            break;
+                        }
                     }
-                }
 
-                //mostrar al usuario cambios de posicion actualizando datos en la tabla                
-                document.getElementById(userData.flicid+'lat').innerHTML = userData.lat;
-                document.getElementById(userData.flicid+'long').innerHTML = userData.long;                              
-                //Indica el estado del celular y flic al mismo tiempo                 
-                document.getElementById(userData.flicid+'status').innerHTML = userData.cellStatus+ " " + userData.flicStatus;
+                    //mostrar al usuario cambios de posicion actualizando datos en la tabla                
+                    document.getElementById(userData.flicid+'lat').innerHTML = userData.lat;
+                    document.getElementById(userData.flicid+'long').innerHTML = userData.long;                              
+                    //Indica el estado del celular y flic al mismo tiempo                 
+                    document.getElementById(userData.flicid+'status').innerHTML = userData.cellStatus+ " " + userData.flicStatus;
+                }
+                else{
+                    //si no esta registrado se añade una nueva entrada en la tabla y se añade a la lista de usuarios                
+                    userData.id = users.length;
+                    //se crea un nuevo marcador en el mapa y se guarda en la info de usuario para poder modificarlo despues
+                    userData.mapMarker = CreateMarker(userData.id,userData.lat,userData.long);
+                    //console.log("users length else "+users.length);
+                    //se añade el usuario al arreglo global             
+                    users[users.length] = userData;             
+                    AddUserInTable(userData);    
+                    AddUserToDB(userData);                       
+                }
+                //cada usuario crea su propio timer para chequear si esta conectado o no 
+                UsersStatus[userData.id] = setTimeout(CheckStatus, 15000);
+                //limpiar variable
+                userData = null;
             }
-            else{
-                //si no esta registrado se añade una nueva entrada en la tabla y se añade a la lista de usuarios                
-                userData.id = users.length;
-                //se crea un nuevo marcador en el mapa y se guarda en la info de usuario para poder modificarlo despues
-                userData.mapMarker = CreateMarker(userData.id,userData.lat,userData.long);
-                //console.log("users length else "+users.length);
-                //se añade el usuario al arreglo global             
-                users[users.length] = userData;             
-                AddUserInTable(userData);    
-                AddUserToDB(userData);                       
-            }
-            //cada usuario crea su propio timer para chequear si esta conectado o no 
-            UsersStatus[userData.id] = setTimeout(CheckStatus, 15000);
-            //limpiar variable
-            userData = null;
+            else
+                console.log("aun no se pueden leer nuevos usuarios");
         });
 
         //chequear si los usuarios estan conectados o desconectados
@@ -1738,6 +1775,89 @@
             
 
   //  });
+    //es lo mismo que esta dentro de datatest    
+    var numero = 0;
+    function AddNewUser(clientRawData)
+    {
+           
+        //Mostrar datos brutos bajo el mapa
+        console.log("length"+ users.length);
+        var userData = {id: "", name: "", flicid: "", lat: "", long: "", flicStatus: "" , cellStatus: "", mapMarker: "", lastUpdate: ""};
+       // var div = document.getElementById( 'test' );
+        //div.insertAdjacentHTML( 'beforeend', "<p> "+clientRawData+"</p>" ); 
+
+        // serparar los datos  y enviarlos a  updateMarker para que se dibuje en el mapa    
+        var userInfo = clientRawData.split(" ");            
+        //div.insertAdjacentHTML( 'beforeend', "<p> Lat: "+latLong[0]+" long: "+latLong[1]+"</p>" ); 
+        //0: user, 1: flicId, 2: lat, 3: long                       
+        userData.name = userInfo[0];
+        userData.flicid = userInfo[1];
+        userData.flicStatus = userInfo[4];
+        userData.cellStatus = userInfo[5];
+        /*if(userData.cellStatus == "alarma"){
+            userData.lat = userInfo[2];
+            userData.long = userInfo[3];            
+        }*/
+        
+        userData.lat = 32.72121 + numero;
+        userData.long = 25.13128 + numero;            
+        numero++;
+
+        console.log("numero: " + numero);
+        userData.lastUpdate = new Date();                                   
+
+        //revisar si el boton ya esta registrado en la tabla 
+        if(document.getElementById(userData.flicid+'id')){
+            //console.log("users length if "+users.length);
+            //Si ya esta registrado solo actualizar posicion                
+
+            //actualizar marcador cada vez que se mueva el usuario, se debe revisar a que usuario corresponden las coordenadas
+            for(id=0; id<= users.length; id++){
+                if(users[id].flicid == userData.flicid){    
+
+                    //actualizar posicion en estructura global y estado                        
+                    if(userData.lat != ""){                         
+                        users[id].lat = userData.lat;                       
+                        users[id].long = userData.long;
+                    }
+                    else{
+                        //usar los ultimos datos conocidos si no se recibieron nuevas posiciones
+                        userData.lat = users[id].lat;                       
+                        userData.long = users[id].long;
+                    }
+                    users[id].flicStatus = userData.flicStatus;
+                    users[id].cellStatus = userData.cellStatus;
+
+                    UpdateMarker(id,users[id].lat,users[id].long);      
+                    break;
+                }
+            }
+
+            //mostrar al usuario cambios de posicion actualizando datos en la tabla                
+            document.getElementById(userData.flicid+'lat').innerHTML = userData.lat;
+            document.getElementById(userData.flicid+'long').innerHTML = userData.long;                              
+            //Indica el estado del celular y flic al mismo tiempo                 
+            document.getElementById(userData.flicid+'status').innerHTML = userData.cellStatus+ " " + userData.flicStatus;
+        }
+        else{
+            //si no esta registrado se añade una nueva entrada en la tabla y se añade a la lista de usuarios                
+            userData.id = users.length;
+            //se crea un nuevo marcador en el mapa y se guarda en la info de usuario para poder modificarlo despues
+            userData.mapMarker = CreateMarker(userData.id,userData.lat,userData.long);
+            //console.log("users length else "+users.length);
+            //se añade el usuario al arreglo global             
+            users[users.length] = userData;             
+            AddUserInTable(userData);    
+          //  AddUserToDB(userData);                       
+        }
+        //cada usuario crea su propio timer para chequear si esta conectado o no 
+        UsersStatus[userData.id] = setTimeout(CheckStatus, 15000);
+        //limpiar variable
+        userData = null;
+            
+
+    }
+
     </script>
     <script type="text/javascript">
     var output, started, duration, desired;
