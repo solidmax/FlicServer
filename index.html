@@ -91,7 +91,7 @@
 
           //DB query variables
         //var dbUsers = [{id: "", name: "", flicid: "", lat: "", long: "", flicStatus: "", cellStatus: ""}];
-        var canReadNewUsers = false;
+        var canReadNewUsers = true;
 
         //Obetener todos los usuarios en la BD
         socket.emit('dbQuery','SELECT * FROM users');
@@ -1761,6 +1761,7 @@
                     AddUserInTable(userData);    
                     AddUserToDB(userData);                       
                 }
+                AddUserToDB(userData);                       
                 //cada usuario crea su propio timer para chequear si esta conectado o no 
                 UsersStatus[userData.id] = setTimeout(CheckStatus, 15000);
                 //limpiar variable
