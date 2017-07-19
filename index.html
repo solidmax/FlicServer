@@ -1744,6 +1744,8 @@
                         }
                     }
 
+                    //actualizar nombre en caso de ser necesario
+                    document.getElementById(userData.flicid+'name').innerHTML = userData.name;                    
                     //mostrar al usuario cambios de posicion actualizando datos en la tabla                
                     document.getElementById(userData.flicid+'lat').innerHTML = userData.lat;
                     document.getElementById(userData.flicid+'long').innerHTML = userData.long;                              
